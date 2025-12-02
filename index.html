@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<head>
+    <meta charset="UTF-8">
+    <title>土風舞查詢系統</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        input[type="text"] { padding: 10px; width: 70%; font-size: 16px; }
+        button { padding: 10px; font-size: 16px; }
+        .results { margin-top: 20px; }
+        .result-item { border-bottom: 1px solid #ccc; padding: 10px 0; }
+        .video-link { display: block; margin-top: 5px; }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>土風舞影片查詢</h1>
+        <p>請輸入舞碼名稱的一部分進行模糊查詢：</p>
+        <input type="text" id="searchInput" placeholder="輸入舞碼名稱...">
+        <button onclick="searchDance()">查詢</button>
+        
+        <div class="results" id="resultsArea">
+            <!-- 查詢結果將顯示在這裡 -->
+        </div>
+    </div>
+
+    <script>
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwcqXk7OdM9EealNuL0be1ZSvg-a9uZSJOlmfT1eXX35QgLgpL7zmkNzLV0NRDOpnIC/exec';
+    let allDances = [];
+
+    async function fetchDances() {
+        try {
+            const response = await fetch(WEB_APP_URL);
+            allDances = await response.json();
+        } catch (error) {
+            document.getElementById('resultsArea').innerHTML = '<p style="color:red;">無法載入資料。</p>';
+        }
+    }
+
+    function extractYouTubeID(url) {
+        if (!url) return null;
+        const regExp = /(?:youtube\.com\/.*v=|youtu\.be\/)([^&]+)/;
+        const match = url.match(regExp);
+        return match ? match[1] : null;
+    }
+
+    function searchDance() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        const resultsArea = document.getElementById('resultsArea');
+        resultsArea.innerHTML = '';
+
+        if (query === '') {
+            resultsArea.innerHTML = '<p>請輸入查詢關鍵字。</p>';
+            return;
+        }
+
+        const filteredDances = allDances.filter(dance =>
+            dance.danceName && dance.danceName.toLowerCase().includes(query)
+        );
+
+        if (filteredDances.length > 0) {
+            filteredDances.forEach(dance => {
+                const video1ID = extractYouTubeID(dance.video1);
+                const video2ID = extractYouTubeID(dance.video2);
+
+                const item = document.createElement('div');
+                item.classList.add('result-item');
+
+                item.innerHTML = `
+                    <strong>舞碼名稱:</strong> ${dance.danceName}<br>
+                    <strong>國家:</strong> ${dance.country}<br>
+                    <strong>舞蹈形式:</strong> ${dance.form}<br><br>
+
+                    ${video1ID ? `
+                        <iframe width="100%" height="315"
+                            src="https://www.youtube.com/embed/${video1ID}"
+                            frameborder="0" allowfullscreen></iframe>
+                        <br><br>` : ''}
+
+                    ${video2ID ? `
+                        <iframe width="100%" height="315"
+                            src="https://www.youtube.com/embed/${video2ID}"
+                            frameborder="0" allowfullscreen></iframe>` : ''}
+                `;
+
+                resultsArea.appendChild(item);
+            });
+        } else {
+            resultsArea.innerHTML = '<p>找不到符合條件的舞碼。</p>';
+        }
+    }
+
+    fetchDances();
+</script>
+
+</body>
+</html>
