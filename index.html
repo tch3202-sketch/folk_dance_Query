@@ -5,13 +5,13 @@
     <meta charset="UTF-8">
     <title>土風舞查詢系統</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .container { max-width: 800px; margin: auto; }
-        input[type="text"] { padding: 10px; width: 70%; font-size: 16px; }
-        button { padding: 10px; font-size: 16px; }
-        .results { margin-top: 20px; }
-        .result-item { border-bottom: 1px solid #ccc; padding: 10px 0; }
-        .video-link { display: block; margin-top: 5px; }
+        body { font-family: Arial, sans-serif; margin: 20px; }/* 設定字體為 Arial 或無襯線字體  設定頁面邊距為 20px */
+        .container { max-width: 800px; margin: auto; }/* 設定容器的最大寬度為 800px  將容器置中對齊 */
+        input[type="text"] { padding: 10px; width: 40%; font-size: 16px; }/* 設定文字輸入框的內邊距為 10px  設定文字輸入框的寬度為 70%  設定文字輸入框的字體大小為 16px */
+        button { padding: 10px; font-size: 16px; }/* 設定按鈕的內邊距為 10px 設定按鈕的字體大小為 16px */
+        .results { margin-top: 20px; } /* 設定結果區塊的上邊距為 20px */
+        .result-item { border-bottom: 1px solid #ccc; padding: 10px 0; }/* 設定結果項目底部邊框為 1px 實線淺灰色 設定結果項目的上下內邊距為 10px，左右為 0 */
+        .video-link { display: block; margin-top: 5px; } /* 將影片連結顯示為區塊元素 設定影片連結的上邊距為 5px */
 
     </style>
 </head>
@@ -75,13 +75,13 @@
                     <strong>舞蹈形式:</strong> ${dance.form}<br><br>
 
                     ${video1ID ? `
-                        <iframe width="100%" height="315"
+                        <iframe width="100%" height="415"
                             src="https://www.youtube.com/embed/${video1ID}"
                             frameborder="0" allowfullscreen></iframe>
                         <br><br>` : ''}
 
                     ${video2ID ? `
-                        <iframe width="100%" height="315"
+                        <iframe width="100%" height="415"
                             src="https://www.youtube.com/embed/${video2ID}"
                             frameborder="0" allowfullscreen></iframe>` : ''}
                 `;
