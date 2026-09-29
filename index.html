@@ -214,7 +214,7 @@
         });
 
         if (filteredDances.length === 0) {
-            resultsArea.innerHTML = '<div class="status-msg" style="color: #7f8c8d;">找不到符合的舞碼影片。</div>';
+            resultsArea.innerHTML = '<div class="status-msg" style="color: #7f8c8d;">找不到符合的舞碼影片，請告知育德新增。</div>';
             return;
         }
 
@@ -229,15 +229,15 @@
                 videoHtml += `<a class="video-link" href="${dance.video2}" target="_blank">🎬 觀看影片 2</a>`;
             }
             if (!videoHtml) {
-                videoHtml = '<span class="no-video">⚠️ 暫無影片連結</span>';
+                videoHtml = '<span class="no-video">⚠️ 暫無影片連結，請告知育德新增</span>';
             }
 
             htmlContent += `
                 <div class="result-item">
                     <h3 class="dance-title">${dance.danceName || '未命名舞碼'}</h3>
                     <div class="dance-meta">
-                        <span class="meta-tag">🌍 國家：${dance.country || '不詳'}</span>
-                        <span class="meta-tag">💃 隊形：${dance.form || '不詳'}</span>
+                        <span class="meta-tag">🌍 國家/出處：${dance.country || '不詳'}</span>
+                        <span class="meta-tag">💃 舞種形式：${dance.form || '不詳'}</span>
                     </div>
                     <div class="video-links">
                         ${videoHtml}
