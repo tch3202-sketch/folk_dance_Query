@@ -137,6 +137,7 @@
         document.body.appendChild(script);
     }
 
+    // 模糊查詢功能
     function searchDance() {
         const query = document.getElementById('searchInput').value.toLowerCase().trim();
         const resultsArea = document.getElementById('resultsArea');
@@ -193,47 +194,53 @@
             `;
         });
 
-resultsArea.innerHTML = htmlContent;
-document.getElementById('searchInput').blur();
-}
-// 表單 POST 寫入功能
-document.getElementById('danceForm').addEventListener('submit', function(e) {
-e.preventDefault();
-const submitBtn = document.getElementById('submitBtn');
-submitBtn.disabled = true;
-submitBtn.innerText = "⚡ 資料上傳中...";
-const formData = {
-wordCount: document.getElementById('wordCount').value,
-danceName: document.getElementById('danceName').value,
-country: document.getElementById('country').value,
-form: document.getElementById('form').value,
-customF: document.getElementById('customF').value,
-video1: document.getElementById('video1').value,
-video2: document.getElementById('video2').value
-};
-fetch(WEB_APP_URL, {
-method: "POST",
-mode: "no-cors",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify(formData)
-})
-.then(() => {
-alert("🎉 舞碼資料已成功寫入 Google 試算表！\n請重新整理網頁後即可查詢到新舞碼。");
-document.getElementById('addFormContainer').style.display = "none";
-document.getElementById('danceForm').reset();
-document.getElementById('searchInput').value = "";
-fetchDances(); // 重新同步最新試算表資料
-})
-.catch(error => {
-alert("❌ 寫入失敗，原因：" + error);
-})
-.finally(() => {
-submitBtn.disabled = false;
-submitBtn.innerText = "確認新增並寫入試算表";
-});
-});
-// Enter 鍵觸發查詢
-document.getElementById('searchInput').addEventListener('keypress', function(event) {
-if (event.key === 'Enter') searchDance();
-});
-window.onload = fetchDances;
+        resultsArea.innerHTML = htmlContent;
+        document.getElementById('searchInput').blur();
+    }
+
+    // 表單 POST 寫入功能
+    document.getElementById('danceForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerText = "⚡ 資料上傳中...";
+
+        const formData = {
+            wordCount: document.getElementById('wordCount').value,
+            danceName: document.getElementById('danceName').value,
+            country: document.getElementById('country').value,
+            form: document.getElementById('form').value,
+            customF: document.getElementById('customF').value,
+            video1: document.getElementById('video1').value,
+            video2: document.getElementById('video2').value
+        };
+
+        fetch(WEB_APP_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formData)
+        })
+        .then(() => {
+            alert("🎉 舞碼資料已成功寫入 Google 試算表！\n請重新整理網頁後即可查詢到新舞碼。");
+            document.getElementById('addFormContainer').style.display = "none";
+            document.getElementById('danceForm').reset();
+            document.getElementById('searchInput').value = "";
+            fetchDances(); // 重新同步最新試算表資料
+        })
+        .catch(error => {
+            alert("❌ 寫入失敗，原因：" + error);
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerText = "確認新增並寫入試算表";
+        });
+    });
+
+    // Enter 鍵觸發查詢
+    document.getElementById('searchInput').addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') searchDance();
+    });
+
+    window.onload = fetchDances;
+</script>
