@@ -2,163 +2,48 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <!-- 關鍵：加入 viewport 設定，讓網頁字體與佈局自動適應手機螢幕 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>桃園國際民俗舞社查詢系統</title>
     <style>
-        /* 基礎全域設定 */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            margin: 0; 
-            padding: 15px; 
-            background-color: #f5f7fa; 
-            color: #333;
-            -webkit-tap-highlight-color: transparent; /* 移除手機點擊時的藍色高亮 */
+            margin: 0; padding: 15px; background-color: #f5f7fa; color: #333; -webkit-tap-highlight-color: transparent;
         }
-        
-        /* 容器寬度自適應手機 */
         .container { 
-            max-width: 600px; 
-            margin: auto; 
-            background: #ffffff; 
-            padding: 20px 15px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
-            box-sizing: border-box;
+            max-width: 600px; margin: auto; background: #ffffff; padding: 20px 15px; border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); box-sizing: border-box;
         }
-        
-        h1 { 
-            font-size: 24px; 
-            color: #2c3e50; 
-            text-align: center;
-            margin-top: 5px;
-            margin-bottom: 5px;
-        }
-        
-        .hint-text {
-            font-size: 14px;
-            color: #7f8c8d;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
-        /* 搜尋區塊：在手機上垂直排列，加大間距 */
-        .search-box { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px; 
-            margin-bottom: 20px; 
-        }
-        
-        /* 手機大字體與大點擊範圍的輸入框 */
+        h1 { font-size: 24px; color: #2c3e50; text-align: center; margin-top: 5px; margin-bottom: 5px; }
+        .hint-text { font-size: 14px; color: #7f8c8d; text-align: center; margin-bottom: 20px; }
+        .search-box { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
         input[type="text"] { 
-            padding: 14px; 
-            width: 100%; 
-            font-size: 16px; /* 手機端必須大於等於16px，否則 iPhone 輸入時畫面會自動放大 */
-            border: 1px solid #ccd1d9; 
-            border-radius: 8px; 
-            box-sizing: border-box; 
-            outline: none;
-            transition: border-color 0.2s;
+            padding: 14px; width: 100%; font-size: 16px; border: 1px solid #ccd1d9; border-radius: 8px; 
+            box-sizing: border-box; outline: none; transition: border-color 0.2s;
         }
-        input[type="text"]:focus {
-            border-color: #3498db;
-        }
-        
-        /* 適合手指點擊的大按鈕 */
+        input[type="text"]:focus { border-color: #3498db; }
         button { 
-            padding: 14px; 
-            font-size: 16px; 
-            font-weight: bold;
-            background-color: #3498db; 
-            color: white; 
-            border: none; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            width: 100%;
-            transition: background-color 0.2s;
+            padding: 14px; font-size: 16px; font-weight: bold; background-color: #3498db; color: white; 
+            border: none; border-radius: 8px; cursor: pointer; width: 100%; transition: background-color 0.2s;
             box-shadow: 0 2px 4px rgba(52, 152, 219, 0.2);
         }
-        button:active { 
-            background-color: #217dbb; /* 手機按下去的深色反饋 */
-        }
-        
-        /* 狀態提示訊息 */
-        .status-msg {
-            text-align: center;
-            font-size: 14px;
-            padding: 10px;
-            border-radius: 6px;
-        }
-        
-        .results { 
-            margin-top: 15px; 
-        }
-        
-        /* 卡片式結果項目，適合手機閱讀 */
+        button:active { background-color: #217dbb; }
+        .status-msg { text-align: center; font-size: 14px; padding: 10px; border-radius: 6px; }
+        .results { margin-top: 15px; }
         .result-item { 
-            background-color: #fff;
-            border: 1px solid #e6e9ed;
-            border-radius: 10px;
-            padding: 15px; 
-            margin-bottom: 12px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            background-color: #fff; border: 1px solid #e6e9ed; border-radius: 10px; padding: 15px; 
+            margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);
         }
-        
-        .dance-title { 
-            margin: 0 0 8px 0; 
-            font-size: 18px;
-            color: #2c3e50; 
-        }
-        
-        /* 國家與隊形標籤化 */
-        .dance-meta { 
-            font-size: 13px; 
-            color: #656d78; 
-            margin-bottom: 15px; 
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .meta-tag {
-            background-color: #f1f2f6;
-            padding: 3px 8px;
-            border-radius: 4px;
-        }
-        
-        /* 手機滿版雙影片按鈕 */
-        .video-links { 
-            display: flex; 
-            flex-direction: column; /* 超過一條網址時垂直排，方便手機點擊 */
-            gap: 10px; 
-        }
-        
+        .dance-title { margin: 0 0 8px 0; font-size: 18px; color: #2c3e50; }
+        .dance-meta { font-size: 13px; color: #656d78; margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 8px; }
+        .meta-tag { background-color: #f1f2f6; padding: 3px 8px; border-radius: 4px; }
+        .video-links { display: flex; flex-direction: column; gap: 10px; }
         .video-link { 
-            display: block; 
-            text-align: center;
-            background-color: #f5f7fa;
-            color: #2980b9; 
-            text-decoration: none; 
-            font-size: 14px; 
-            font-weight: 500;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #e6e9ed;
+            display: block; text-align: center; background-color: #f5f7fa; color: #2980b9; 
+            text-decoration: none; font-size: 14px; font-weight: 500; padding: 10px; border-radius: 6px; border: 1px solid #e6e9ed;
         }
-        .video-link:active {
-            background-color: #e6e9ed;
-        }
-        
-        .no-video { 
-            color: #aab2bd; 
-            font-size: 13px; 
-            text-align: center;
-            display: block;
-            padding: 8px;
-        }
-
-        /* 當螢幕寬度大於 480px (如電腦/平板) 時的調整 */
+        .video-link:active { background-color: #e6e9ed; }
+        .no-video { color: #aab2bd; font-size: 13px; text-align: center; display: block; padding: 8px; }
         @media (min-width: 480px) {
             .search-box { flex-direction: row; }
             button { width: auto; min-width: 100px; }
@@ -171,22 +56,20 @@
     <div class="container">
         <h1>桃園國際民俗舞社影片查詢</h1>
         <p class="hint-text">請輸入舞碼名稱進行模糊查詢</p>
-        
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="輸入舞碼名稱...">
             <button onclick="searchDance()">查詢</button>
         </div>
-        
         <div class="results" id="resultsArea">
             <div class="status-msg" style="color: #7f8c8d;">資料載入中，請稍候...</div>
         </div>
     </div>
 
     <script>
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx9ETIl79nZ3kJub7yr_tb5gRhS7F8R1UDCdGOlzv6xPRVpNNsftyRBph9456Ex5lDGEg/exec';
+    // ⚠️ 請替換成你部署後的 GAS Web App 網址
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx_5fubtx9ovKG_26EfCgz-qLDpffyc4FGGcYfM0_AQKS1iyVDMgLxLQL2O8Vqps27Nqw/exec';
     let allDances = [];
 
-    // 網頁載入時自動從 Google Apps Script 取得資料
     async function fetchDances() {
         try {
             const response = await fetch(WEB_APP_URL);
@@ -197,7 +80,6 @@
         }
     }
 
-    // 執行模糊查詢與畫面渲染
     function searchDance() {
         const query = document.getElementById('searchInput').value.toLowerCase().trim();
         const resultsArea = document.getElementById('resultsArea');
@@ -207,7 +89,6 @@
             return;
         }
 
-        // 篩選出符合關鍵字的舞碼
         const filteredDances = allDances.filter(dance => {
             const name = dance.danceName ? dance.danceName.toLowerCase() : '';
             return name.includes(query);
@@ -218,7 +99,6 @@
             return;
         }
 
-        // 動態生成適合手機閱讀的卡片
         let htmlContent = '';
         filteredDances.forEach(dance => {
             let videoHtml = '';
@@ -232,6 +112,7 @@
                 videoHtml = '<span class="no-video">⚠️ 暫無影片連結，請告知育德新增</span>';
             }
 
+            // 🌟 畫面呈現 C(舞名), D(國家), E(形式), G(影片1), H(影片2) 的內容
             htmlContent += `
                 <div class="result-item">
                     <h3 class="dance-title">${dance.danceName || '未命名舞碼'}</h3>
@@ -247,19 +128,15 @@
         });
 
         resultsArea.innerHTML = htmlContent;
-        
-        // 自動收起手機鍵盤
         document.getElementById('searchInput').blur();
     }
 
-    // 按 Enter 鍵觸發查詢
     document.getElementById('searchInput').addEventListener('keypress', function(event) {
-        if (event.key === 'Enter') {
-            searchDance();
-        }
+        if (event.key === 'Enter') searchDance();
     });
 
     window.onload = fetchDances;
     </script>
 </body>
 </html>
+
