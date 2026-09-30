@@ -33,16 +33,22 @@
         .results { margin-top: 15px; }
         .result-item { 
             background-color: #fff; border: 1px solid #e6e9ed; border-radius: 10px; padding: 15px; 
-            margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.02); position: relative;
         }
         .dance-title { margin: 0 0 8px 0; font-size: 18px; color: #2c3e50; }
         .dance-meta { font-size: 13px; color: #656d78; margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 8px; }
         .meta-tag { background-color: #f1f2f6; padding: 3px 8px; border-radius: 4px; }
-        .video-links { display: flex; flex-direction: column; gap: 10px; }
+        .video-links { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
         .video-link { 
             display: block; text-align: center; background-color: #f5f7fa; color: #27ae60; 
             text-decoration: none; font-size: 14px; font-weight: 500; padding: 10px; border-radius: 6px; border: 1px solid #e6e9ed;
         }
+        .btn-edit-trigger {
+            background-color: #3498db; padding: 8px 12px; font-size: 13px; width: auto; margin-left: auto; display: block;
+            box-shadow: 0 2px 4px rgba(52, 152, 219, 0.2);
+        }
+        .btn-edit-trigger:active { background-color: #2980b9; }
+        
         #addFormContainer { display: none; background: #ffffff; border: 2px dashed #27ae60; padding: 20px 15px; border-radius: 12px; margin-top: 15px; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 6px; font-weight: bold; font-size: 14px; color: #2c3e50; }
@@ -59,7 +65,7 @@
 <body>
     <div class="container">
         <h1>桃園國際民俗舞社管理系統</h1>
-        <p class="hint-text">🔑 管理者權限：查詢與資料錄入後台</p>
+        <p class="hint-text">🔑 管理者權限：查詢與資料錄入/修改後台</p>
         
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="輸入舞碼名稱...">
@@ -70,16 +76,18 @@
             <div class="status-msg" style="color: #7f8c8d;">資料載入中，請稍候...</div>
         </div>
 
-        <!-- 新增表單區塊 -->
+        <!-- 表單區塊 -->
         <div id="addFormContainer">
+            <h3 id="formTitle" style="color:#2c3e50; margin-top:0;">📝 登錄新舞碼</h3>
             <form id="danceForm">
+                <input type="hidden" id="formAction" value="create"> <!-- 區分新增或修改 -->
                 <div class="form-group">
                     <label for="wordCount">🔢 字數 (欄位 A)：</label>
                     <input type="text" id="wordCount" required placeholder="例如：4">
                 </div>
                 <div class="form-group">
                     <label for="danceName">💃 舞碼名稱 (欄位 C)：</label>
-                    <input type="text" id="danceName" required>
+                    <input type="text" id="danceName" required readonly style="background-color: #eee; color: #666;">
                 </div>
                 <div class="form-group">
                     <label for="country">🌍 國家/出處 (欄位 D)：</label>
@@ -89,14 +97,14 @@
                     <label for="form">💃 舞種形式 (欄位 E)：</label>
                     <select id="form" required>
                         <option value="" disabled selected>-- 請選擇舞種形式 --</option>
-                        <option value="單人/circle">單人/circle</option>
-                        <option value="單人/line">單人/line</option>
-                        <option value="雙人/circle">雙人/circle</option>
-                        <option value="雙人/line">雙人/line</option>
+                        <option value="單人 / circle">單人 / circle</option>
+                        <option value="單人 / line">單人 / line</option>
+                        <option value="雙人 / circle">雙人 / circle</option>
+                        <option value="雙人 / line">雙人 / line</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="customF">📝 難度 (欄位 F)：</label>
+                    <label for="customF">📝 自訂備註 (欄位 F)：</label>
                     <input type="text" id="customF" placeholder="請輸入欄位 F 內容">
                 </div>
                 <div class="form-group">
@@ -112,12 +120,10 @@
         </div>
     </div>
 
-    <!-- 🌟 所有 JavaScript 程式碼都已經完美包裹在此區塊內 -->
     <script>
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzqSr3q-P72owTk3Bmxqfs3oce4fnNUQ46eGYw3J0IdZttqJaaf-HaamGndfbdEiWUoig/exec';
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzjAobhc54FbFCBt5Xt9qUqXAQ74Ktm1vkUoCnHAd5ocx44Oa8b1mp3CK_Pn0VrkBv_uA/exec';
     let allDances = [];
 
-    // JSONP 機制連線獲取試算表資料
     function fetchDances() {
         const callbackName = 'jsonpCallback_' + Math.round(100000 * Math.random());
         window[callbackName] = function(data) {
@@ -137,7 +143,6 @@
         document.body.appendChild(script);
     }
 
-    // 模糊查詢功能
     function searchDance() {
         const query = document.getElementById('searchInput').value.toLowerCase().trim();
         const resultsArea = document.getElementById('resultsArea');
@@ -158,9 +163,14 @@
         if (filteredDances.length === 0) {
             resultsArea.innerHTML = '<div class="status-msg" style="color: #7f8c8d; background-color: #f5f7fa; border: 1px solid #ccd1d9;">⚠️ 系統查無此舞名。已為您啟動下方登錄表單：</div>';
             
-            // 自動剔除星號 * 計算純中文字數
+            // 設定為「新增模式」
+            document.getElementById('formTitle').innerText = "🕺 登錄新舞碼";
+            document.getElementById('formAction').value = "create";
+            document.getElementById('submitBtn').innerText = "確認新增並寫入試算表";
+            document.getElementById('submitBtn').style.backgroundColor = "#2980b9";
+            document.getElementById('addFormContainer').style.borderColor = "#27ae60";
+
             const cleanLength = query.replace(/[\*]/g, '').length;
-            
             document.getElementById('wordCount').value = cleanLength; 
             document.getElementById('danceName').value = document.getElementById('searchInput').value.trim();
             document.getElementById('country').value = "";
@@ -174,73 +184,82 @@
         }
 
         let htmlContent = '';
-        filteredDances.forEach(dance => {
+        // 🌟 查有資料：卡片下方加上「✏️ 修改此舞碼」按鈕，並綁定索引
+        filteredDances.forEach((dance, idx) => {
             let videoHtml = '';
-            if (dance.video1) videoHtml += `<a class="video-link" href="${dance.video1}" target="_blank">🎬 觀看影片 1</a>`;
-            if (dance.video2) videoHtml += `<a class="video-link" href="${dance.video2}" target="_blank">🎬 觀看影片 2</a>`;
-            if (!videoHtml) videoHtml = '<span class="no-video">⚠️ 暫無影片連結</span>';
-
-            htmlContent += `
-                <div class="result-item">
-                    <h3 class="dance-title">${dance.danceName || '未命名舞碼'}</h3>
-                    <div class="dance-meta">
-                        <span class="meta-tag">🌍 國家/出處：${dance.country || '不詳'}</span>
-                        <span class="meta-tag">💃 舞種形式：${dance.form || '不詳'}</span>
-                    </div>
-                    <div class="video-links">
-                        ${videoHtml}
-                    </div>
-                </div>
-            `;
-        });
-
-        resultsArea.innerHTML = htmlContent;
-        document.getElementById('searchInput').blur();
-    }
-
-    // 表單 POST 寫入功能
-    document.getElementById('danceForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const submitBtn = document.getElementById('submitBtn');
-        submitBtn.disabled = true;
-        submitBtn.innerText = "⚡ 資料上傳中...";
-
-        const formData = {
-            wordCount: document.getElementById('wordCount').value,
-            danceName: document.getElementById('danceName').value,
-            country: document.getElementById('country').value,
-            form: document.getElementById('form').value,
-            customF: document.getElementById('customF').value,
-            video1: document.getElementById('video1').value,
-            video2: document.getElementById('video2').value
-        };
-
-        fetch(WEB_APP_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formData)
-        })
-        .then(() => {
-            alert("🎉 舞碼資料已成功寫入 Google 試算表！\n請重新整理網頁後即可查詢到新舞碼。");
-            document.getElementById('addFormContainer').style.display = "none";
-            document.getElementById('danceForm').reset();
-            document.getElementById('searchInput').value = "";
-            fetchDances(); // 重新同步最新試算表資料
-        })
-        .catch(error => {
-            alert("❌ 寫入失敗，原因：" + error);
-        })
-        .finally(() => {
-            submitBtn.disabled = false;
-            submitBtn.innerText = "確認新增並寫入試算表";
-        });
-    });
-
-    // Enter 鍵觸發查詢
-    document.getElementById('searchInput').addEventListener('keypress', function(event) {
-        if (event.key === 'Enter') searchDance();
-    });
-
-    window.onload = fetchDances;
+if (dance.video1) videoHtml += <a class="video-link" href="${dance.video1}" target="_blank">🎬 觀看影片 1</a>;
+if (dance.video2) videoHtml += <a class="video-link" href="${dance.video2}" target="_blank">🎬 觀看影片 2</a>;
+if (!videoHtml) videoHtml = '⚠️ 暫無影片連結';
+// 將資料轉為安全字串存入按鈕屬性中
+const encodedData = encodeURIComponent(JSON.stringify(dance));
+htmlContent += <div class="result-item"> <h3 class="dance-title">${dance.danceName || '未命名舞碼'}</h3> <div class="dance-meta"> <span class="meta-tag">🌍 國家/出處：${dance.country || '不詳'}</span> <span class="meta-tag">💃 舞種形式：${dance.form || '不詳'}</span> ${dance.customF ?📝 備註：${dance.customF}: ''} </div> <div class="video-links"> ${videoHtml} </div> <button class="btn-edit-trigger" onclick="initiateEdit('${encodedData}')">✏️ 修改此舞碼</button> </div>;
+});
+resultsArea.innerHTML = htmlContent;
+document.getElementById('searchInput').blur();
+}
+// 🌟 點擊修改按鈕時調用：切換至「修改模式」並自動填入舊資料
+window.initiateEdit = function(encodedData) {
+const dance = JSON.parse(decodeURIComponent(encodedData));
+const formContainer = document.getElementById('addFormContainer');
+document.getElementById('formTitle').innerText = ✏️ 修改舞碼：${dance.danceName};
+document.getElementById('formAction').value = "update"; // 🌟 改為修改模式
+document.getElementById('submitBtn').innerText = "確認修改並更新試算表";
+document.getElementById('submitBtn').style.backgroundColor = "#e67e22"; // 變更按鈕為橘色
+document.getElementById('addFormContainer').style.borderColor = "#3498db";
+// 帶入原本試算表中的舊資料
+document.getElementById('wordCount').value = dance.wordCount || "";
+document.getElementById('danceName').value = dance.danceName || "";
+document.getElementById('country').value = dance.country || "";
+document.getElementById('form').value = dance.form || "";
+document.getElementById('customF').value = dance.customF || "";
+document.getElementById('video1').value = dance.video1 || "";
+document.getElementById('video2').value = dance.video2 || "";
+formContainer.style.display = "block";
+// 畫面自動滾動到表單區塊，方便手機操作
+formContainer.scrollIntoView({ behavior: 'smooth' });
+};
+// 表單提交處理 (相容新增與修改)
+document.getElementById('danceForm').addEventListener('submit', function(e) {
+e.preventDefault();
+const submitBtn = document.getElementById('submitBtn');
+const actionType = document.getElementById('formAction').value;
+submitBtn.disabled = true;
+submitBtn.innerText = "⚡ 資料處理中...";
+const formData = {
+action: actionType, // "create" 或 "update"
+wordCount: document.getElementById('wordCount').value,
+danceName: document.getElementById('danceName').value,
+country: document.getElementById('country').value,
+form: document.getElementById('form').value,
+customF: document.getElementById('customF').value,
+video1: document.getElementById('video1').value,
+video2: document.getElementById('video2').value
+};
+fetch(WEB_APP_URL, {
+method: "POST",
+mode: "no-cors",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify(formData)
+})
+.then(() => {
+const successMsg = actionType === "update" ? "🎉 舞碼資料已成功完成更新！" : "🎉 新舞碼資料已成功寫入！";
+alert(successMsg + "\n請重新整理網頁後，即可查詢到最新資料。");
+document.getElementById('addFormContainer').style.display = "none";
+document.getElementById('danceForm').reset();
+document.getElementById('searchInput').value = "";
+fetchDances(); // 重新同步最新試算表資料
+})
+.catch(error => {
+alert("❌ 操作失敗，原因：" + error);
+})
+.finally(() => {
+submitBtn.disabled = false;
+submitBtn.innerText = actionType === "update" ? "確認修改並更新試算表" : "確認新增並寫入試算表";
+});
+});
+document.getElementById('searchInput').addEventListener('keypress', function(event) {
+if (event.key === 'Enter') searchDance();
+});
+window.onload = fetchDances;
+            
 </script>
