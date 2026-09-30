@@ -184,82 +184,105 @@
         }
 
         let htmlContent = '';
-        // 🌟 查有資料：卡片下方加上「✏️ 修改此舞碼」按鈕，並綁定索引
+        // 🌟 修正後的卡片渲染邏輯 (補齊了反單引號與欄位排版)
         filteredDances.forEach((dance, idx) => {
             let videoHtml = '';
-if (dance.video1) videoHtml += <a class="video-link" href="${dance.video1}" target="_blank">🎬 觀看影片 1</a>;
-if (dance.video2) videoHtml += <a class="video-link" href="${dance.video2}" target="_blank">🎬 觀看影片 2</a>;
-if (!videoHtml) videoHtml = '⚠️ 暫無影片連結';
-// 將資料轉為安全字串存入按鈕屬性中
-const encodedData = encodeURIComponent(JSON.stringify(dance));
-htmlContent += <div class="result-item"> <h3 class="dance-title">${dance.danceName || '未命名舞碼'}</h3> <div class="dance-meta"> <span class="meta-tag">🌍 國家/出處：${dance.country || '不詳'}</span> <span class="meta-tag">💃 舞種形式：${dance.form || '不詳'}</span> ${dance.customF ?📝 備註：${dance.customF}: ''} </div> <div class="video-links"> ${videoHtml} </div> <button class="btn-edit-trigger" onclick="initiateEdit('${encodedData}')">✏️ 修改此舞碼</button> </div>;
-});
-resultsArea.innerHTML = htmlContent;
-document.getElementById('searchInput').blur();
-}
-// 🌟 點擊修改按鈕時調用：切換至「修改模式」並自動填入舊資料
-window.initiateEdit = function(encodedData) {
-const dance = JSON.parse(decodeURIComponent(encodedData));
-const formContainer = document.getElementById('addFormContainer');
-document.getElementById('formTitle').innerText = ✏️ 修改舞碼：${dance.danceName};
-document.getElementById('formAction').value = "update"; // 🌟 改為修改模式
-document.getElementById('submitBtn').innerText = "確認修改並更新試算表";
-document.getElementById('submitBtn').style.backgroundColor = "#e67e22"; // 變更按鈕為橘色
-document.getElementById('addFormContainer').style.borderColor = "#3498db";
-// 帶入原本試算表中的舊資料
-document.getElementById('wordCount').value = dance.wordCount || "";
-document.getElementById('danceName').value = dance.danceName || "";
-document.getElementById('country').value = dance.country || "";
-document.getElementById('form').value = dance.form || "";
-document.getElementById('customF').value = dance.customF || "";
-document.getElementById('video1').value = dance.video1 || "";
-document.getElementById('video2').value = dance.video2 || "";
-formContainer.style.display = "block";
-// 畫面自動滾動到表單區塊，方便手機操作
-formContainer.scrollIntoView({ behavior: 'smooth' });
-};
-// 表單提交處理 (相容新增與修改)
-document.getElementById('danceForm').addEventListener('submit', function(e) {
-e.preventDefault();
-const submitBtn = document.getElementById('submitBtn');
-const actionType = document.getElementById('formAction').value;
-submitBtn.disabled = true;
-submitBtn.innerText = "⚡ 資料處理中...";
-const formData = {
-action: actionType, // "create" 或 "update"
-wordCount: document.getElementById('wordCount').value,
-danceName: document.getElementById('danceName').value,
-country: document.getElementById('country').value,
-form: document.getElementById('form').value,
-customF: document.getElementById('customF').value,
-video1: document.getElementById('video1').value,
-video2: document.getElementById('video2').value
-};
-fetch(WEB_APP_URL, {
-method: "POST",
-mode: "no-cors",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify(formData)
-})
-.then(() => {
-const successMsg = actionType === "update" ? "🎉 舞碼資料已成功完成更新！" : "🎉 新舞碼資料已成功寫入！";
-alert(successMsg + "\n請重新整理網頁後，即可查詢到最新資料。");
-document.getElementById('addFormContainer').style.display = "none";
-document.getElementById('danceForm').reset();
-document.getElementById('searchInput').value = "";
-fetchDances(); // 重新同步最新試算表資料
-})
-.catch(error => {
-alert("❌ 操作失敗，原因：" + error);
-})
-.finally(() => {
-submitBtn.disabled = false;
-submitBtn.innerText = actionType === "update" ? "確認修改並更新試算表" : "確認新增並寫入試算表";
-});
-});
-document.getElementById('searchInput').addEventListener('keypress', function(event) {
-if (event.key === 'Enter') searchDance();
-});
-window.onload = fetchDances;
-            
+            if (dance.video1) videoHtml += `<a class="video-link" href="${dance.video1}" target="_blank">🎬 觀看影片 1</a>`;
+            if (dance.video2) videoHtml += `<a class="video-link" href="${dance.video2}" target="_blank">🎬 觀看影片 2</a>`;
+            if (!videoHtml) videoHtml = '<span class="no-video">⚠️ 暫無影片連結</span>';
+
+            // 將資料轉為安全字串存入按鈕屬性中
+            const encodedData = encodeURIComponent(JSON.stringify(dance));
+
+            htmlContent += `
+                <div class="result-item">
+                    <h3 class="dance-title">${dance.danceName || '未命名舞碼'}</h3>
+                    <div class="dance-meta">
+                        <span class="meta-tag">🌍 國家/出處：${dance.country || '不詳'}</span>
+                        <span class="meta-tag">💃 舞種形式：${dance.form || '不詳'}</span>
+                        ${dance.customF ? `<span class="meta-tag">📝 備註：\${dance.customF}</span>` : ''}
+                    </div>
+                    <div class="video-links">
+                        ${videoHtml}
+                    </div>
+                    <button class="btn-edit-trigger" onclick="initiateEdit('${encodedData}')">✏️ 修改此舞碼</button>
+                </div>
+            `;
+        });
+        
+        resultsArea.innerHTML = htmlContent;
+        document.getElementById('searchInput').blur();
+    }
+
+    // 點擊修改按鈕時調用：切換至「修改模式」並自動填入舊資料
+    window.initiateEdit = function(encodedData) {
+        const dance = JSON.parse(decodeURIComponent(encodedData));
+        const formContainer = document.getElementById('addFormContainer');
+        
+        document.getElementById('formTitle').innerText = `✏️ 修改舞碼：${dance.danceName}`;
+        document.getElementById('formAction').value = "update"; // 改為修改模式
+        document.getElementById('submitBtn').innerText = "確認修改並更新試算表";
+        document.getElementById('submitBtn').style.backgroundColor = "#e67e22"; // 變更按鈕為橘色
+        document.getElementById('addFormContainer').style.borderColor = "#3498db";
+        
+        // 帶入原本試算表中的舊資料
+        document.getElementById('wordCount').value = dance.wordCount || "";
+        document.getElementById('danceName').value = dance.danceName || "";
+        document.getElementById('country').value = dance.country || "";
+        document.getElementById('form').value = dance.form || "";
+        document.getElementById('customF').value = dance.customF || "";
+        document.getElementById('video1').value = dance.video1 || "";
+        document.getElementById('video2').value = dance.video2 || "";
+        
+        formContainer.style.display = "block";
+        formContainer.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    // 表單提交處理 (相容新增與修改)
+    document.getElementById('danceForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const submitBtn = document.getElementById('submitBtn');
+        const actionType = document.getElementById('formAction').value;
+        submitBtn.disabled = true;
+        submitBtn.innerText = "⚡ 資料處理中...";
+
+        const formData = {
+            action: actionType, 
+            wordCount: document.getElementById('wordCount').value,
+            danceName: document.getElementById('danceName').value,
+            country: document.getElementById('country').value,
+            form: document.getElementById('form').value,
+            customF: document.getElementById('customF').value,
+            video1: document.getElementById('video1').value,
+            video2: document.getElementById('video2').value
+        };
+
+        fetch(WEB_APP_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formData)
+        })
+        .then(() => {
+            const successMsg = actionType === "update" ? "🎉 舞碼資料已成功完成更新！" : "🎉 新舞碼資料已成功寫入！";
+            alert(successMsg + "\n請重新整理網頁後，即可查詢到最新資料。");
+            document.getElementById('addFormContainer').style.display = "none";
+            document.getElementById('danceForm').reset();
+            document.getElementById('searchInput').value = "";
+            fetchDances(); 
+        })
+        .catch(error => {
+            alert("❌ 操作失敗，原因(" + error + ")");
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerText = actionType === "update" ? "確認修改並更新試算表" : "確認新增並寫入試算表";
+        });
+    });
+
+    document.getElementById('searchInput').addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') searchDance();
+    });
+
+    window.onload = fetchDances;
 </script>
