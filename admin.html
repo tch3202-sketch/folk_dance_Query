@@ -70,7 +70,7 @@
             <div class="status-msg" style="color: #7f8c8d;">資料載入中，請稍候...</div>
         </div>
 
-        <!-- 🌟 新增表單：可完美輸入 A, C, D, E, F, G, H 欄位 -->
+        <!-- 新增表單區塊 -->
         <div id="addFormContainer">
             <form id="danceForm">
                 <div class="form-group">
@@ -112,19 +112,29 @@
         </div>
     </div>
 
+    <!-- 🌟 所有 JavaScript 程式碼都已經完美包裹在此區塊內 -->
     <script>
-    // ⚠️ 請替換成你部署後的 GAS Web App 網址
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx_5fubtx9ovKG_26EfCgz-qLDpffyc4FGGcYfM0_AQKS1iyVDMgLxLQL2O8Vqps27Nqw/exec';
     let allDances = [];
 
-    async function fetchDances() {
-        try {
-            const response = await fetch(WEB_APP_URL);
-            allDances = await response.json();
+    // JSONP 機制連線獲取試算表資料
+    function fetchDances() {
+        const callbackName = 'jsonpCallback_' + Math.round(100000 * Math.random());
+        window[callbackName] = function(data) {
+            allDances = data;
             document.getElementById('resultsArea').innerHTML = '<div class="status-msg" style="color: #27ae60; background-color: #edfcf2;">資料連線成功！請輸入舞碼查詢。</div>';
-        } catch (error) {
-            document.getElementById('resultsArea').innerHTML = '<div class="status-msg" style="color:#e74c3c; background-color: #fdf2f2;">無法載入資料，請確認 API 設定。</div>';
-        }
+            delete window[callbackName];
+            const oldScript = document.getElementById('jsonpScript');
+            if (oldScript) oldScript.remove();
+        };
+
+        const script = document.createElement('script');
+        script.id = 'jsonpScript';
+        script.src = WEB_APP_URL + (WEB_APP_URL.includes('?') ? '&' : '?') + 'prefix=' + callbackName;
+        script.onerror = function() {
+            document.getElementById('resultsArea').innerHTML = '<div class="status-msg" style="color:#e74c3c; background-color: #fdf2f2;">無法載入資料，請確認 API 設定或稍後再試。</div>';
+        };
+        document.body.appendChild(script);
     }
 
     function searchDance() {
@@ -147,7 +157,7 @@
         if (filteredDances.length === 0) {
             resultsArea.innerHTML = '<div class="status-msg" style="color: #7f8c8d; background-color: #f5f7fa; border: 1px solid #ccd1d9;">⚠️ 系統查無此舞名。已為您啟動下方登錄表單：</div>';
             
-            // 🌟 聰明計算：自動剔除星號 * 等符號計算純字數 (例如「也許是愛*」會自動判斷為 4)
+            // 自動剔除星號 * 計算純中文字數
             const cleanLength = query.replace(/[\*]/g, '').length;
             
             document.getElementById('wordCount').value = cleanLength; 
@@ -183,18 +193,17 @@
             `;
         });
 
-        resultsArea.innerHTML = htmlContent;
-        document.getElementById('searchInput').blur();
-    }
-
-    document.getElementById('danceForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const submitBtn = document.getElementById('submitBtn');
-        submitBtn.disabled = true;
-        submitBtn.innerText = "⚡ 資料上傳中...";
-
-        const formData = {
-            wordCount: document.getElementById('wordCount').value,
+resultsArea.innerHTML = htmlContent;
+document.getElementById('searchInput').blur();
+}
+// 表單 POST 寫入功能
+document.getElementById('danceForm').addEventListener('submit', function(e) {
+e.preventDefault();
+const submitBtn = document.getElementById('submitBtn');
+submitBtn.disabled = true;
+submitBtn.innerText = "⚡ 資料上傳中...";
+const formData = {
+wordCount: document.getElementById('wordCount').value,
 danceName: document.getElementById('danceName').value,
 country: document.getElementById('country').value,
 form: document.getElementById('form').value,
@@ -213,7 +222,7 @@ alert("🎉 舞碼資料已成功寫入 Google 試算表！\n請重新整理網�
 document.getElementById('addFormContainer').style.display = "none";
 document.getElementById('danceForm').reset();
 document.getElementById('searchInput').value = "";
-fetchDances();
+fetchDances(); // 重新同步最新試算表資料
 })
 .catch(error => {
 alert("❌ 寫入失敗，原因：" + error);
@@ -223,6 +232,7 @@ submitBtn.disabled = false;
 submitBtn.innerText = "確認新增並寫入試算表";
 });
 });
+// Enter 鍵觸發查詢
 document.getElementById('searchInput').addEventListener('keypress', function(event) {
 if (event.key === 'Enter') searchDance();
 });
