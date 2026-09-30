@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>桃園國際民俗舞社管理系統</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; padding: 15px; background-color: #f5f7fa; color: #333; -webkit-tap-highlight-color: transparent;
+        }
+        .container { 
+            max-width: 600px; margin: auto; background: #ffffff; padding: 20px 15px; border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); box-sizing: border-box;
+        }
+        h1 { font-size: 24px; color: #2c3e50; text-align: center; margin-top: 5px; margin-bottom: 5px; }
+        .hint-text { font-size: 14px; color: #e67e22; text-align: center; margin-bottom: 20px; font-weight: bold; }
+        .search-box { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+        input[type="text"], input[type="url"], select { 
+            padding: 14px; width: 100%; font-size: 16px; border: 1px solid #ccd1d9; border-radius: 8px; 
+            box-sizing: border-box; outline: none; background-color: #fff; transition: border-color 0.2s;
+        }
+        input[type="text"]:focus, input[type="url"]:focus, select:focus { border-color: #27ae60; }
+        button { 
+            padding: 14px; font-size: 16px; font-weight: bold; background-color: #27ae60; color: white; 
+            border: none; border-radius: 8px; cursor: pointer; width: 100%; transition: background-color 0.2s;
+            box-shadow: 0 2px 4px rgba(39, 174, 96, 0.2);
+        }
+        button:active { background-color: #1e7e43; }
+        button:disabled { background-color: #cccccc; box-shadow: none; cursor: not-allowed; }
+        .status-msg { text-align: center; font-size: 14px; padding: 10px; border-radius: 6px; margin-bottom: 12px; }
+        .results { margin-top: 15px; }
+        .result-item { 
+            background-color: #fff; border: 1px solid #e6e9ed; border-radius: 10px; padding: 15px; 
+            margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+        .dance-title { margin: 0 0 8px 0; font-size: 18px; color: #2c3e50; }
+        .dance-meta { font-size: 13px; color: #656d78; margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 8px; }
+        .meta-tag { background-color: #f1f2f6; padding: 3px 8px; border-radius: 4px; }
+        .video-links { display: flex; flex-direction: column; gap: 10px; }
+        .video-link { 
+            display: block; text-align: center; background-color: #f5f7fa; color: #27ae60; 
+            text-decoration: none; font-size: 14px; font-weight: 500; padding: 10px; border-radius: 6px; border: 1px solid #e6e9ed;
+        }
+        #addFormContainer { display: none; background: #ffffff; border: 2px dashed #27ae60; padding: 20px 15px; border-radius: 12px; margin-top: 15px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: bold; font-size: 14px; color: #2c3e50; }
+        .btn-submit { background-color: #2980b9; box-shadow: 0 2px 4px rgba(41, 128, 185, 0.2); }
+        .btn-submit:active { background-color: #1c6393; }
+        @media (min-width: 480px) {
+            .search-box { flex-direction: row; }
+            button { width: auto; min-width: 100px; }
+            .video-links { flex-direction: row; }
+            .video-link { flex: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>桃園國際民俗舞社管理系統</h1>
+        <p class="hint-text">🔑 管理者權限：查詢與資料錄入後台</p>
+        
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="輸入舞碼名稱...">
+            <button onclick="searchDance()">查詢</button>
+        </div>
+        
+        <div class="results" id="resultsArea">
+            <div class="status-msg" style="color: #7f8c8d;">資料載入中，請稍候...</div>
+        </div>
+
+        <!-- 🌟 新增表單：可完美輸入 A, C, D, E, F, G, H 欄位 -->
+        <div id="addFormContainer">
+            <form id="danceForm">
+                <div class="form-group">
+                    <label for="wordCount">🔢 字數 (欄位 A)：</label>
+                    <input type="text" id="wordCount" required placeholder="例如：4">
+                </div>
+                <div class="form-group">
+                    <label for="danceName">💃 舞碼名稱 (欄位 C)：</label>
+                    <input type="text" id="danceName" required>
+                </div>
+                <div class="form-group">
+                    <label for="country">🌍 國家/出處 (欄位 D)：</label>
+                    <input type="text" id="country" required placeholder="例如：保加利亞">
+                </div>
+                <div class="form-group">
+                    <label for="form">💃 舞種形式 (欄位 E)：</label>
+                    <select id="form" required>
+                        <option value="" disabled selected>-- 請選擇舞種形式 --</option>
+                        <option value="單人 / circle">單人 / circle</option>
+                        <option value="單人 / line">單人 / line</option>
+                        <option value="雙人 / circle">雙人 / circle</option>
+                        <option value="雙人 / line">雙人 / line</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="customF">📝 自訂備註 (欄位 F)：</label>
+                    <input type="text" id="customF" placeholder="請輸入欄位 F 內容">
+                </div>
+                <div class="form-group">
+                    <label for="video1">🎬 影片連結 1 (欄位 G)：</label>
+                    <input type="url" id="video1" placeholder="請貼上影片網址 (https://...)">
+                </div>
+                <div class="form-group">
+                    <label for="video2">🎬 影片連結 2 (欄位 H)：</label>
+                    <input type="url" id="video2" placeholder="請貼上影片網址 (https://...)">
+                </div>
+                <button type="submit" class="btn-submit" id="submitBtn">確認新增並寫入試算表</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    // ⚠️ 請替換成你部署後的 GAS Web App 網址
+    const WEB_APP_URL = 'https://google.com';
+    let allDances = [];
+
+    async function fetchDances() {
+        try {
+            const response = await fetch(WEB_APP_URL);
+            allDances = await response.json();
+            document.getElementById('resultsArea').innerHTML = '<div class="status-msg" style="color: #27ae60; background-color: #edfcf2;">資料連線成功！請輸入舞碼查詢。</div>';
+        } catch (error) {
+            document.getElementById('resultsArea').innerHTML = '<div class="status-msg" style="color:#e74c3c; background-color: #fdf2f2;">無法載入資料，請確認 API 設定。</div>';
+        }
+    }
+
+    function searchDance() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        const resultsArea = document.getElementById('resultsArea');
+        const formContainer = document.getElementById('addFormContainer');
+        
+        formContainer.style.display = "none";
+        
+        if (query === '') {
+            resultsArea.innerHTML = '<div class="status-msg" style="color:#e67e22; background-color: #fdf8f2;">請輸入舞碼關鍵字再進行查詢。</div>';
+            return;
+        }
+
+        const filteredDances = allDances.filter(dance => {
+            const name = dance.danceName ? dance.danceName.toLowerCase() : '';
+            return name.includes(query);
+        });
+
+        if (filteredDances.length === 0) {
+            resultsArea.innerHTML = '<div class="status-msg" style="color: #7f8c8d; background-color: #f5f7fa; border: 1px solid #ccd1d9;">⚠️ 系統查無此舞名。已為您啟動下方登錄表單：</div>';
+            
+            // 🌟 聰明計算：自動剔除星號 * 等符號計算純字數 (例如「也許是愛*」會自動判斷為 4)
+            const cleanLength = query.replace(/[\*]/g, '').length;
+            
+            document.getElementById('wordCount').value = cleanLength; 
+            document.getElementById('danceName').value = document.getElementById('searchInput').value.trim();
+            document.getElementById('country').value = "";
+            document.getElementById('form').value = ""; 
+            document.getElementById('customF').value = ""; 
+            document.getElementById('video1').value = "";
+            document.getElementById('video2').value = "";
+            
+            formContainer.style.display = "block";
+            return;
+        }
+
+        let htmlContent = '';
+        filteredDances.forEach(dance => {
+            let videoHtml = '';
+            if (dance.video1) videoHtml += `<a class="video-link" href="${dance.video1}" target="_blank">🎬 觀看影片 1</a>`;
+            if (dance.video2) videoHtml += `<a class="video-link" href="${dance.video2}" target="_blank">🎬 觀看影片 2</a>`;
+            if (!videoHtml) videoHtml = '<span class="no-video">⚠️ 暫無影片連結</span>';
+
+            htmlContent += `
+                <div class="result-item">
+                    <h3 class="dance-title">${dance.danceName || '未命名舞碼'}</h3>
+                    <div class="dance-meta">
+                        <span class="meta-tag">🌍 國家/出處：${dance.country || '不詳'}</span>
+                        <span class="meta-tag">💃 舞種形式：${dance.form || '不詳'}</span>
+                    </div>
+                    <div class="video-links">
+                        ${videoHtml}
+                    </div>
+                </div>
+            `;
+        });
+
+        resultsArea.innerHTML = htmlContent;
+        document.getElementById('searchInput').blur();
+    }
+
+    document.getElementById('danceForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerText = "⚡ 資料上傳中...";
+
+        const formData = {
+            wordCount: document.getElementById('wordCount').value,
+danceName: document.getElementById('danceName').value,
+country: document.getElementById('country').value,
+form: document.getElementById('form').value,
+customF: document.getElementById('customF').value,
+video1: document.getElementById('video1').value,
+video2: document.getElementById('video2').value
+};
+fetch(WEB_APP_URL, {
+method: "POST",
+mode: "no-cors",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify(formData)
+})
+.then(() => {
+alert("🎉 舞碼資料已成功寫入 Google 試算表！\n請重新整理網頁後即可查詢到新舞碼。");
+document.getElementById('addFormContainer').style.display = "none";
+document.getElementById('danceForm').reset();
+document.getElementById('searchInput').value = "";
+fetchDances();
+})
+.catch(error => {
+alert("❌ 寫入失敗，原因：" + error);
+})
+.finally(() => {
+submitBtn.disabled = false;
+submitBtn.innerText = "確認新增並寫入試算表";
+});
+});
+document.getElementById('searchInput').addEventListener('keypress', function(event) {
+if (event.key === 'Enter') searchDance();
+});
+window.onload = fetchDances;
